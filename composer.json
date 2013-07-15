@@ -1,0 +1,14 @@
+{
+    "name": "wizad/settings-bundle",
+    "description": "Settings system for Symfony2 applications, editable via web user interface, injected in service container.",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "William POTTIER",
+            "email": "developer@william-pottier.fr"
+        }
+    ],
+    "require": {
+
+    }
+}

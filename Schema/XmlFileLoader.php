@@ -75,7 +75,7 @@ class XmlFileLoader
             $parameter[$n->localName] = $n->textContent;
         }
 
-        $schema[$parameter['key']] = $parameter;
+        $schema[sha1($parameter['key'])] = $parameter;
     }
 
 

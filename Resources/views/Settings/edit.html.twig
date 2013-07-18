@@ -1,0 +1,20 @@
+{% extends 'WizadSettingsBundle::layout.html.twig' %}
+
+{% block wizad_setting_content %}
+
+<form action="{{ path('wizad_settings') }}" method="post" class="form-horizontal">
+
+    {{ form_errors(form) }}
+
+    {% for row in form %}
+
+        {{ form_row(row) }}
+
+    {% endfor %}
+
+    <div class="form-actions">
+        <input type="submit" value="Save settings" class="btn btn-primary" />
+    </div>
+</form>
+
+{% endblock %}

@@ -2,6 +2,7 @@
     "name": "wizad/settings-bundle",
     "description": "Settings system for Symfony2 applications, editable via web user interface, injected in service container.",
     "license": "MIT",
+    "minimum-stability": "dev",
     "authors": [
         {
             "name": "William POTTIER",
@@ -9,6 +10,19 @@
         }
     ],
     "require": {
-
-    }
+        "php": ">=5.3.3",
+        "symfony/framework-bundle":        "~2.3"
+    },
+    "require-dev": {
+        "phpspec/phpspec":          "2.0.*@dev",
+        "symfony/form":             "~2.3",
+        "symfony/validator":        "~2.3"
+    },
+    "config": {
+        "bin-dir": "bin"
+    },
+    "autoload": {
+        "psr-0": { "Wizad\\SettingsBundle": "" }
+    },
+    "target-dir": "Wizad//SettingsBundle"
 }

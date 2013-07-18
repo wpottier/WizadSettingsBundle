@@ -48,6 +48,8 @@ class WizadSettingsExtension extends Extension
             $schema = array_merge($loader->load('settings.xml'), $schema);
         }
 
+        $container->setParameter('wizad_settings.schema', $schema);
+
         return $schema;
     }
 
@@ -57,15 +59,15 @@ class WizadSettingsExtension extends Extension
         $m->addServer('localhost', 11211);
         $prefix = isset($config[0]['memcache']['prefix']) && !empty($config[0]['memcache']['prefix']) ? $config[0]['memcache']['prefix'].'.' : '';
 
-        foreach($schema as $key => $parameter) {
+        foreach($schema as $parameter) {
 
-            $fqk = $prefix.$key;
+            $fqk = $prefix.$parameter['key'];
             $value = $m->get($fqk);
             if($value === false) {
                 $value = $parameter['default'];
             }
 
-            $container->setParameter('wizad_settings.dynamic.'.$key, $value);
+            $container->setParameter('wizad_settings.dynamic.'.$parameter['key'], $value);
         }
     }
 

@@ -18,6 +18,7 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 use Symfony\Component\DependencyInjection\Loader;
 use Symfony\Component\HttpKernel\Kernel;
+use Wizad\SettingsBundle\Dal\RedisParametersStorage;
 use Wizad\SettingsBundle\Schema;
 
 /**
@@ -32,9 +33,9 @@ class WizadSettingsExtension extends Extension
      */
     public function load(array $configs, ContainerBuilder $container)
     {
-        $processor = new Processor();
+        $processor     = new Processor();
         $configuration = $this->getConfiguration($configs, $container);
-        $config = $processor->processConfiguration($configuration, $configs);
+        $config        = $processor->processConfiguration($configuration, $configs);
 
         $loader = new Loader\XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('services.xml');
@@ -43,13 +44,13 @@ class WizadSettingsExtension extends Extension
         $this->injectDynamicParameters($configs, $container, $schema);
     }
 
-    protected function loadDynamicParametersSchema($config , ContainerBuilder $container)
+    protected function loadDynamicParametersSchema($config, ContainerBuilder $container)
     {
 
         $bundles = $container->getParameter('kernel.bundles');
 
         $schema = array();
-        foreach($config[0]['bundles'] as $bundle) {
+        foreach ($config[0]['bundles'] as $bundle) {
 
             $reflector = new \ReflectionClass($bundles[$bundle]);
 
@@ -62,7 +63,7 @@ class WizadSettingsExtension extends Extension
         return $schema;
     }
 
-    protected function injectDynamicParameters($config , ContainerBuilder $container, $schema)
+    protected function injectDynamicParameters($config, ContainerBuilder $container, $schema)
     {
         $prefix  = isset($config[0]['redis']['prefix']) && !empty($config[0]['redis']['prefix']) ? $config[0]['redis']['prefix'] . '.' : '';
         $storage = new RedisParametersStorage(array(
@@ -78,13 +79,14 @@ class WizadSettingsExtension extends Extension
                 $value = $storage->get($parameter['key']);
             }
 
-            $container->setParameter('wizad_settings.dynamic.'.$parameter['key'], $value);
+            $container->setParameter('wizad_settings.dynamic.' . $parameter['key'], $value);
         }
     }
 
     public function getConfiguration(array $config, ContainerBuilder $container)
     {
         $bundles = $container->getParameter('kernel.bundles');
+
         return new Configuration(array_keys($bundles));
     }
 }

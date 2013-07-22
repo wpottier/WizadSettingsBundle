@@ -3,13 +3,18 @@ WizadSettingsBundle [![Build status...](https://secure.travis-ci.org/wpottier/Wi
 
 Dynamic parameters system with web editing interface for [**Symfony2**](http://symfony.com) applications.
 
-[phpspec2](http://phpspec.net) examples
----------------------------------------
+Documentation
+-------------
 
-``` bash
-$ composer install --dev --prefer-dist
-$ bin/phpspec run -f pretty
-```
+The bulk of the documentation is stored in the `Resources/doc/index.md`
+file in this bundle:
+
+[Read the Documentation for master](https://github.com/wpottier/WizadSettingsBundle/blob/master/Resources/doc/index.md)
+
+Installation
+------------
+
+All the installation instructions are located in [documentation](https://github.com/wpottier/WizadSettingsBundle/blob/master/Resources/doc/install.md)
 
 Bug tracking
 ------------
@@ -33,7 +38,7 @@ For more information on SemVer, please visit [semver.org website](http://semver.
 MIT License
 -----------
 
-License can be found [here](https://github.com/wpottier/WizadSettingsBundle/blob/master/Resources/meta/LICENSE).
+License can be found [here](https://github.com/wpottier/WizadSettingsBundle/blob/master/LICENSE).
 
 Authors
 -------

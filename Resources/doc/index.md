@@ -1,0 +1,2 @@
+WizadSettingsBundle Manual
+==========================

@@ -64,16 +64,18 @@ class WizadSettingsExtension extends Extension
 
     protected function injectDynamicParameters($config , ContainerBuilder $container, $schema)
     {
-        $m = new \Memcached();
-        $m->addServer('localhost', 11211);
-        $prefix = isset($config[0]['memcache']['prefix']) && !empty($config[0]['memcache']['prefix']) ? $config[0]['memcache']['prefix'].'.' : '';
+        $prefix  = isset($config[0]['redis']['prefix']) && !empty($config[0]['redis']['prefix']) ? $config[0]['redis']['prefix'] . '.' : '';
+        $storage = new RedisParametersStorage(array(
+            'dsn'    => $config[0]['redis']['dsn'],
+            'prefix' => $prefix
+        ));
 
-        foreach($schema as $parameter) {
+        foreach ($schema as $parameter) {
 
-            $fqk = $prefix.$parameter['key'];
-            $value = $m->get($fqk);
-            if($value === false) {
-                $value = $parameter['default'];
+            $value = $parameter['default'];
+
+            if($storage->has($parameter['key'])) {
+                $value = $storage->get($parameter['key']);
             }
 
             $container->setParameter('wizad_settings.dynamic.'.$parameter['key'], $value);

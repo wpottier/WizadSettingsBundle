@@ -1,8 +1,8 @@
-{% extends 'WizadSettingsBundle::layout.html.twig' %}
+{% extends 'WizadSettingsBundle:Settings:layout.html.twig' %}
 
 {% block wizad_setting_content %}
 
-<form action="{{ path('wizad_settings') }}" method="post" class="form-horizontal">
+<form action="{{ path('wizad_settings_edit') }}" method="post" class="form-horizontal">
 
     {{ form_errors(form) }}
 

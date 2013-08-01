@@ -12,6 +12,8 @@
 namespace Wizad\SettingsBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpKernel\Kernel;
+use Wizad\SettingsBundle\DependencyInjection\ContainerInjectionManager;
 use Wizad\SettingsBundle\Form\SettingsType;
 use Wizad\SettingsBundle\Model\Settings;
 
@@ -29,7 +31,18 @@ class SettingsController extends Controller
         $form->handleRequest($this->getRequest());
 
         if($form->isValid()) {
+            // Save data in storage
             $settings->save();
+
+            // Force container regeneration
+            /** @var Kernel $kernel */
+            $kernel = $this->get('kernel');
+            /** @var ContainerInjectionManager $injectionManager */
+            $injectionManager = $this->get('wizad_settings.dependency_injection.container_injection_manager');
+            $injectionManager->rebuild($kernel);
+
+            $this->get('session')->getFlashbag()->add('success', 'New settings were saved and applied.');
+            return $this->redirect($this->getRequest()->getUri());
         }
 
         $template = $this->getRequest()->attributes->get('template', 'WizadSettingsBundle:Settings:edit.html.twig');

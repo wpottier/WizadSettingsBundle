@@ -11,8 +11,16 @@
 
 namespace Wizad\SettingsBundle\Model;
 
+use Symfony\Bundle\SecurityBundle\Tests\Functional\AppKernel;
+use Symfony\Component\Config\ConfigCache;
+use Symfony\Component\Console\Application;
+use Symfony\Component\DependencyInjection\Container;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpKernel\Kernel;
+use Symfony\Component\HttpKernel\KernelEvents;
 use Wizad\SettingsBundle\Dal\ParametersStorageInterface;
+use Wizad\SettingsBundle\DependencyInjection\ContainerInjectionManager;
 
 class Settings implements \ArrayAccess
 {
@@ -21,27 +29,18 @@ class Settings implements \ArrayAccess
      */
     private $parametersStorage;
 
-    /**
-     * @var ContainerInterface
-     */
-
-    /**
-     * @var \Symfony\Component\DependencyInjection\ContainerInterface
-     */
-    private $container;
-
     private $schema;
 
     private $keyDict;
 
     private $data;
 
-    public function __construct(ParametersStorageInterface $parametersStorage, ContainerInterface $container, $schema)
+    public function __construct(ParametersStorageInterface $parametersStorage, $schema)
     {
         $this->parametersStorage = $parametersStorage;
-        $this->container         = $container;
         $this->schema            = $schema;
-        $this->data = array();
+        $this->data              = array();
+        $this->keyDict           = array();
 
         foreach ($this->schema as $id => $setting) {
             $this->keyDict[$setting['key']] = $id;
@@ -88,11 +87,19 @@ class Settings implements \ArrayAccess
                 trigger_error(sprintf('Property %s does not exist in dynamic settings.', $name));
             }
 
-            return $this->container->getParameter(sprintf('wizad_settings.dynamic.%s', $this->schema[$name]['key']));
+            return $this->schema[$name]['default'];
         } elseif (strpos($name, 'form_') === 0) {
             $name = str_replace('form_', '', $name);
 
             return $this->formName($name);
+        }
+        elseif(array_key_exists($name, $this->keyDict)) {
+            $value = $this->schema[$this->keyDict[$name]]['default'];
+
+            if($this->parametersStorage->has($name))
+                $value = $this->parametersStorage->get($name);
+
+            return $value;
         }
 
         trigger_error(sprintf('Property %s does not exist in dynamic settings.', $name));
@@ -109,6 +116,9 @@ class Settings implements \ArrayAccess
         return $this->data[$this->schema[$name]['key']] = $value;
     }
 
+    /**
+     * Save current model in the storage
+     */
     public function save()
     {
         foreach ($this->data as $key => $value) {
@@ -148,7 +158,7 @@ class Settings implements \ArrayAccess
             return array_key_exists($offset, $this->schema);
         }
 
-        return false;
+        return array_key_exists($offset, $this->keyDict);
     }
 
     /**

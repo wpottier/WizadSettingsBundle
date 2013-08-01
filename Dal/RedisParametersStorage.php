@@ -47,4 +47,12 @@ class RedisParametersStorage implements ParametersStorageInterface
 
         return $this->predis->set($key, $value);
     }
+
+    public function remove($key)
+    {
+        if(!$this->predis->isConnected())
+            $this->predis->connect();
+
+        return $this->predis->del($key);
+    }
 }

@@ -11,8 +11,10 @@
 
 namespace Wizad\SettingsBundle;
 
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 class WizadSettingsBundle extends Bundle
 {
+
 }

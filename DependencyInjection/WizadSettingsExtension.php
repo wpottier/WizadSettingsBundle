@@ -14,6 +14,8 @@ namespace Wizad\SettingsBundle\DependencyInjection;
 use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\Definition;
+use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 use Symfony\Component\DependencyInjection\Loader;
 use Symfony\Component\HttpKernel\Kernel;
@@ -40,15 +42,22 @@ class WizadSettingsExtension extends Extension
         $loader->load('services.xml');
 
         // Initialize Settings service
-        $storageEngine = $this->loadStorageEngine($config, $container);
+        $this->loadStorageEngine($config, $container);
 
         // Load settings schema
-        $schema = $this->loadDynamicParametersSchema($config, $container);
+        $this->loadDynamicParametersSchema($config, $container);
 
         // Inject parameters
-        $this->injectDynamicParameters($config, $container, $schema, $storageEngine);
+        $container->get('wizad_settings.dependency_injection.container_injection_manager')->inject($container);
     }
 
+    /**
+     * @param                  $config
+     * @param ContainerBuilder $container
+     *
+     * @return ParametersStorageInterface
+     * @throws \Exception
+     */
     protected function loadStorageEngine($config, ContainerBuilder $container)
     {
         if(isset($config['redis'])) {
@@ -71,6 +80,12 @@ class WizadSettingsExtension extends Extension
         throw new \Exception('Unsupport storage');
     }
 
+    /**
+     * @param                  $config
+     * @param ContainerBuilder $container
+     *
+     * @return array
+     */
     protected function loadDynamicParametersSchema($config, ContainerBuilder $container)
     {
         $bundles = $container->getParameter('kernel.bundles');
@@ -87,20 +102,6 @@ class WizadSettingsExtension extends Extension
         $container->setParameter('wizad_settings.schema', $schema);
 
         return $schema;
-    }
-
-    protected function injectDynamicParameters($config, ContainerBuilder $container, $schema, ParametersStorageInterface $parametersStorage)
-    {
-        foreach ($schema as $parameter) {
-
-            $value = $parameter['default'];
-
-            if($parametersStorage->has($parameter['key'])) {
-                $value = $parametersStorage->get($parameter['key']);
-            }
-
-            $container->setParameter('wizad_settings.dynamic.' . $parameter['key'], $value);
-        }
     }
 
     public function getConfiguration(array $config, ContainerBuilder $container)

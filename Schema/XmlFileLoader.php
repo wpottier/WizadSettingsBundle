@@ -56,12 +56,12 @@ class XmlFileLoader
     {
         $schema = array();
 
-        $path = $this->locator->locate($file);
-        $xml = $this->parseFile($path);
+        $path     = $this->locator->locate($file);
+        $xml      = $this->parseFile($path);
         $document = $xml->documentElement;
 
         /** @var \DOMElement $setting */
-        $prefix = $document->hasAttribute('prefix') ? $document->getAttribute('prefix').'.' : '';
+        $prefix = $document->hasAttribute('prefix') ? $document->getAttribute('prefix') . '.' : '';
 
         foreach ($document->getElementsByTagName('parameter') as $node) {
             $this->parseParameter($node, $schema, $prefix);
@@ -73,7 +73,7 @@ class XmlFileLoader
     protected function parseParameter(\DOMElement $node, &$schema, $prefix)
     {
         $parameter = array(
-            'key' => $prefix.$node->getAttribute('key'),
+            'key' => $prefix . $node->getAttribute('key'),
         );
 
         foreach ($node->childNodes as $n) {
@@ -81,10 +81,10 @@ class XmlFileLoader
                 continue;
             }
 
-            switch($n->localName) {
+            switch ($n->localName) {
                 case 'form':
                     $parameter['form'] = array(
-                        'type' => $n->hasAttribute('type') ? $n->getAttribute('type') : 'text',
+                        'type'    => $n->hasAttribute('type') ? $n->getAttribute('type') : 'text',
                         'options' => array()
                     );
                     break;
@@ -94,11 +94,11 @@ class XmlFileLoader
             }
         }
 
-        if(!isset($parameter['form'])) {
+        if (!isset($parameter['form'])) {
             $parameter['form'] = array();
         }
 
-        if(!isset($parameter['form']['type'])) {
+        if (!isset($parameter['form']['type'])) {
             $parameter['form']['type'] = 'text';
         }
 

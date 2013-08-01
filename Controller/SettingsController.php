@@ -19,14 +19,23 @@ class SettingsController extends Controller
 {
     public function editAction()
     {
-        /** @var Settings $object */
-        $object = $this->get('wizad_settings.model.settings');
-        $form = $this->createForm(new SettingsType(), $object, array('schema' => $object->getSchema()));
+        /** @var Settings $settings */
+        $settings = $this->get('wizad_settings.model.settings');
+        $form = $this->createForm(new SettingsType(), $settings, array(
+            'schema' => $settings->getSchema(),
+            'action' => $this->generateUrl('wizad_settings_edit')
+        ));
+
+        $form->handleRequest($this->getRequest());
+
+        if($form->isValid()) {
+            $settings->save();
+        }
 
         $template = $this->getRequest()->attributes->get('template', 'WizadSettingsBundle:Settings:edit.html.twig');
-
         return $this->render($template, array(
-            'form' => $form->createView()
+            'form' => $form->createView(),
+            'settings' => $settings
         ));
     }
 

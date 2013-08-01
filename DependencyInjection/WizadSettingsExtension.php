@@ -14,11 +14,10 @@ namespace Wizad\SettingsBundle\DependencyInjection;
 use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Config\FileLocator;
-use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 use Symfony\Component\DependencyInjection\Loader;
 use Symfony\Component\HttpKernel\Kernel;
-use Wizad\SettingsBundle\Dal\RedisParametersStorage;
+use Wizad\SettingsBundle\Dal\ParametersStorageInterface;
 use Wizad\SettingsBundle\Schema;
 
 /**
@@ -40,17 +39,44 @@ class WizadSettingsExtension extends Extension
         $loader = new Loader\XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('services.xml');
 
-        $schema = $this->loadDynamicParametersSchema($configs, $container);
-        $this->injectDynamicParameters($configs, $container, $schema);
+        // Initialize Settings service
+        $storageEngine = $this->loadStorageEngine($config, $container);
+
+        // Load settings schema
+        $schema = $this->loadDynamicParametersSchema($config, $container);
+
+        // Inject parameters
+        $this->injectDynamicParameters($config, $container, $schema, $storageEngine);
+    }
+
+    protected function loadStorageEngine($config, ContainerBuilder $container)
+    {
+        if(isset($config['redis'])) {
+
+            $prefix  = isset($config['redis']['prefix']) && !empty($config['redis']['prefix']) ? $config['redis']['prefix'] . '.' : '';
+            $container->setParameter('wizad_settings.config.storage', array(
+                'dsn'    => $config['redis']['dsn'],
+                'prefix' => $prefix
+            ));
+
+            $parametersStorageServiceDef = $container->getDefinition('wizad_settings.dal.parameters_storage');
+            $parametersStorageServiceDef
+                ->setClass($container->getParameter('wizad_settings.dal.redis.class'))
+                ->addArgument($container->getParameter('wizad_settings.config.storage'))
+            ;
+
+            return $container->get('wizad_settings.dal.parameters_storage');
+        }
+
+        throw new \Exception('Unsupport storage');
     }
 
     protected function loadDynamicParametersSchema($config, ContainerBuilder $container)
     {
-
         $bundles = $container->getParameter('kernel.bundles');
 
         $schema = array();
-        foreach ($config[0]['bundles'] as $bundle) {
+        foreach ($config['bundles'] as $bundle) {
 
             $reflector = new \ReflectionClass($bundles[$bundle]);
 
@@ -63,20 +89,14 @@ class WizadSettingsExtension extends Extension
         return $schema;
     }
 
-    protected function injectDynamicParameters($config, ContainerBuilder $container, $schema)
+    protected function injectDynamicParameters($config, ContainerBuilder $container, $schema, ParametersStorageInterface $parametersStorage)
     {
-        $prefix  = isset($config[0]['redis']['prefix']) && !empty($config[0]['redis']['prefix']) ? $config[0]['redis']['prefix'] . '.' : '';
-        $storage = new RedisParametersStorage(array(
-            'dsn'    => $config[0]['redis']['dsn'],
-            'prefix' => $prefix
-        ));
-
         foreach ($schema as $parameter) {
 
             $value = $parameter['default'];
 
-            if($storage->has($parameter['key'])) {
-                $value = $storage->get($parameter['key']);
+            if($parametersStorage->has($parameter['key'])) {
+                $value = $parametersStorage->get($parameter['key']);
             }
 
             $container->setParameter('wizad_settings.dynamic.' . $parameter['key'], $value);

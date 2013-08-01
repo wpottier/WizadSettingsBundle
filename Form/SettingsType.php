@@ -22,7 +22,7 @@ class SettingsType extends AbstractType {
         $schema = $options['schema'];
 
         foreach($schema as $name => $parameter) {
-            $builder->add(sprintf('setting_%s', $name), 'text', array('label' => $parameter['name']));
+            $builder->add(sprintf('setting_%s', $name), $parameter['form']['type'], array('label' => $parameter['name'], 'required' => false));
         }
     }
 

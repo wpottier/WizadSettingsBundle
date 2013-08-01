@@ -81,7 +81,25 @@ class XmlFileLoader
                 continue;
             }
 
-            $parameter[$n->localName] = $n->textContent;
+            switch($n->localName) {
+                case 'form':
+                    $parameter['form'] = array(
+                        'type' => $n->hasAttribute('type') ? $n->getAttribute('type') : 'text',
+                        'options' => array()
+                    );
+                    break;
+                default:
+                    $parameter[$n->localName] = $n->textContent;
+                    break;
+            }
+        }
+
+        if(!isset($parameter['form'])) {
+            $parameter['form'] = array();
+        }
+
+        if(!isset($parameter['form']['type'])) {
+            $parameter['form']['type'] = 'text';
         }
 
         $schema[sha1($parameter['key'])] = $parameter;

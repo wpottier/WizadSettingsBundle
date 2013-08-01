@@ -27,13 +27,17 @@ use Wizad\SettingsBundle\Schema;
  *
  * To learn more see {@link http://symfony.com/doc/current/cookbook/bundles/extension.html}
  */
-class WizadSettingsExtension extends Extension
+class WizadSettingsExtension extends Extension implements PrependExtensionInterface
 {
     /**
-     * {@inheritDoc}
+     * Allow an extension to prepend the extension configurations.
+     *
+     * @param ContainerBuilder $container
      */
-    public function load(array $configs, ContainerBuilder $container)
+    public function prepend(ContainerBuilder $container)
     {
+        $configs = $container->getExtensionConfig('wizad_settings');
+
         $processor     = new Processor();
         $configuration = $this->getConfiguration($configs, $container);
         $config        = $processor->processConfiguration($configuration, $configs);
@@ -49,6 +53,14 @@ class WizadSettingsExtension extends Extension
 
         // Inject parameters
         $container->get('wizad_settings.dependency_injection.container_injection_manager')->inject($container);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function load(array $configs, ContainerBuilder $container)
+    {
+
     }
 
     /**

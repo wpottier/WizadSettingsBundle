@@ -18,4 +18,4 @@ Now if you want to retrieve the value of the settings name "email.sender_name" d
 {{ wizad_settings['my_site.email.sender_name'] }}
 ```
 
-For informations, the container parameters is named : %wizad_settings.dynamic.my_site.email.sender_name%
+For informations, the container parameters is named : ```%wizad_settings.dynamic.my_site.email.sender_name%```

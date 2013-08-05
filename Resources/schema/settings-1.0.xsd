@@ -28,6 +28,7 @@
         <xsd:choice minOccurs="0" maxOccurs="unbounded">
             <xsd:element name="name" type="xsd:string"/>
             <xsd:element name="default" type="xsd:string"/>
+            <xsd:element name="description" type="xsd:string"/>
             <xsd:element name="form" type="form"/>
         </xsd:choice>
 

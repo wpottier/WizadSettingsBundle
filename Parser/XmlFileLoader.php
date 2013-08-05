@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Wizad\SettingsBundle\Schema;
+namespace Wizad\SettingsBundle\Parser;
 
 use Symfony\Component\Config\FileLocatorInterface;
 use Symfony\Component\Config\Util\XmlUtils;
@@ -17,6 +17,9 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 class XmlFileLoader
 {
+    const NAMESPACE_URI = 'http://william-pottier.fr/schema/settings';
+    const SCHEME_PATH   = '/../Resources/schema/settings-1.0.xsd';
+
     /**
      * @var \Symfony\Component\Config\FileLocatorInterface
      */
@@ -118,7 +121,7 @@ class XmlFileLoader
     protected function parseFile($file)
     {
         try {
-            $dom = XmlUtils::loadFile($file);
+            $dom = XmlUtils::loadFile($file, __DIR__ . static::SCHEME_PATH);
         } catch (\InvalidArgumentException $e) {
             throw new \InvalidArgumentException(sprintf('Unable to parse file "%s".', $file), $e->getCode(), $e);
         }

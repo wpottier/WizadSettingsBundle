@@ -20,7 +20,7 @@ use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 use Symfony\Component\DependencyInjection\Loader;
 use Symfony\Component\HttpKernel\Kernel;
 use Wizad\SettingsBundle\Dal\ParametersStorageInterface;
-use Wizad\SettingsBundle\Schema;
+use Wizad\SettingsBundle\Parser;
 
 /**
  * This is the class that loads and manages your bundle configuration
@@ -107,7 +107,7 @@ class WizadSettingsExtension extends Extension implements PrependExtensionInterf
 
             $reflector = new \ReflectionClass($bundles[$bundle]);
 
-            $loader = new Schema\XmlFileLoader(new FileLocator(dirname($reflector->getFileName()) . '/Resources/config'));
+            $loader = new Parser\XmlFileLoader(new FileLocator(dirname($reflector->getFileName()) . '/Resources/config'));
             $schema = array_merge($loader->load('settings.xml'), $schema);
         }
 

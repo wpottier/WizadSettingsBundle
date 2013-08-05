@@ -27,8 +27,8 @@ class ContainerInjectionManager
     public function __construct(ParametersStorageInterface $parametersStorage, $schema, $parametersPrefix)
     {
         $this->parametersStorage = $parametersStorage;
-        $this->schema = $schema;
-        $this->parametersPrefix = $parametersPrefix;
+        $this->schema            = $schema;
+        $this->parametersPrefix  = $parametersPrefix;
     }
 
     /**
@@ -42,11 +42,11 @@ class ContainerInjectionManager
 
             $value = $parameter['default'];
 
-            if($this->parametersStorage->has($parameter['key'])) {
+            if ($this->parametersStorage->has($parameter['key'])) {
                 $value = $this->parametersStorage->get($parameter['key']);
             }
 
-            $container->setParameter($this->getParametersPrefix() . $parameter['key'], $value);
+            $container->setParameter($this->getParametersPrefix() . $parameter['key'], $this->protectParameterValue($value));
         }
     }
 
@@ -87,5 +87,10 @@ class ContainerInjectionManager
     public function getParametersPrefix()
     {
         return $this->parametersPrefix;
+    }
+
+    protected function protectParameterValue($value)
+    {
+        return str_replace('%', '%%', $value);
     }
 }

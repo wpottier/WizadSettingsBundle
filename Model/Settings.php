@@ -11,16 +11,12 @@
 
 namespace Wizad\SettingsBundle\Model;
 
-use Symfony\Bundle\SecurityBundle\Tests\Functional\AppKernel;
-use Symfony\Component\Config\ConfigCache;
 use Symfony\Component\Console\Application;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Kernel;
-use Symfony\Component\HttpKernel\KernelEvents;
 use Wizad\SettingsBundle\Dal\ParametersStorageInterface;
-use Wizad\SettingsBundle\DependencyInjection\ContainerInjectionManager;
 
 class Settings implements \ArrayAccess
 {

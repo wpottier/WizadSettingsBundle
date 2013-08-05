@@ -4,6 +4,43 @@
             targetNamespace="http://william-pottier.fr/schema/settings"
             elementFormDefault="qualified">
 
+    <xsd:annotation>
+        <xsd:documentation><![CDATA[
+      WizadSettingsBundle XML Settings Schema, version 1.0
+      Authors: William POTTIER
 
+      This scheme defines the elements and attributes that can be used to define
+      settings. A setting map a configurable data injected in container and stored in a database.
+    ]]></xsd:documentation>
+    </xsd:annotation>
 
+    <xsd:element name="settings" type="settings" />
+
+    <xsd:complexType name="settings">
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="parameter" type="parameter" />
+        </xsd:choice>
+
+        <xsd:attribute name="prefix" type="xsd:string" />
+    </xsd:complexType>
+
+    <xsd:complexType name="parameter">
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="name" type="xsd:string"/>
+            <xsd:element name="default" type="xsd:string"/>
+            <xsd:element name="form" type="form"/>
+        </xsd:choice>
+
+        <xsd:attribute name="key" type="xsd:string" />
+    </xsd:complexType>
+
+    <xsd:complexType name="form">
+        <xsd:attribute name="type" type="form_type"  />
+    </xsd:complexType>
+
+    <xsd:simpleType name="form_type">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="textarea" />
+        </xsd:restriction>
+    </xsd:simpleType>
 </xsd:schema>

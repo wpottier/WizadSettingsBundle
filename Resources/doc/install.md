@@ -71,7 +71,10 @@ In your bundle, create a file name settings.xml in the folder <bundle_dir>/Resou
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" ?>
-<settings prefix="my_site">
+<settings prefix="my_site"
+          xmlns="http://william-pottier.fr/schema/settings"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://william-pottier.fr/schema/settings https://raw.github.com/wpottier/WizadSettingsBundle/master/Resources/schema/settings-1.0.xsd">
 
     <parameter key="email.sender_name">
         <name>Email sender name</name>

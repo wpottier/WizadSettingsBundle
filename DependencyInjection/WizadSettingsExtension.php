@@ -104,7 +104,6 @@ class WizadSettingsExtension extends Extension implements PrependExtensionInterf
 
         $schema = array();
         foreach ($config['bundles'] as $bundle) {
-
             $reflector = new \ReflectionClass($bundles[$bundle]);
 
             $loader = new Parser\XmlFileLoader(new FileLocator(dirname($reflector->getFileName()) . '/Resources/config'));
@@ -112,7 +111,6 @@ class WizadSettingsExtension extends Extension implements PrependExtensionInterf
         }
 
         $container->setParameter('wizad_settings.schema', $schema);
-
         return $schema;
     }
 

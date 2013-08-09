@@ -2,11 +2,10 @@
 
 {% block wizad_setting_content %}
 
-<div class="pull-right">
-    <form action="{{ path('wizad_settings_export') }}" method="post">
-        <button type="submit">Export</button>
-    </form>
-</div>
+<ul>
+    <li><a href="{{ path('wizad_settings_import') }}">{% trans %}Import{% endtrans %}</a></li>
+    <li><a href="{{ path('wizad_settings_export') }}">{% trans %}Export{% endtrans %}</a></li>
+</ul>
 
 <form action="{{ form.vars.action }}" method="{{ form.vars.method }}" class="form-horizontal">
 

@@ -128,6 +128,24 @@ class Settings implements \ArrayAccess
     }
 
     /**
+     * @return array
+     */
+    public function getDataAsArray()
+    {
+        $data = array();
+
+        foreach($this->schema as $param) {
+            if(!$this->parametersStorage->has($param['key'])) {
+                continue;
+            }
+
+            $data[$param['key']] = $this->parametersStorage->get($param['key']);
+        }
+
+        return $data;
+    }
+
+    /**
      * (PHP 5 &gt;= 5.0.0)<br/>
      * Whether a offset exists
      *

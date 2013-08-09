@@ -8,4 +8,7 @@
         <default key="_controller">WizadSettingsBundle:Settings:edit</default>
     </route>
 
+    <route id="wizad_settings_export" pattern="/export" methods="POST">
+        <default key="_controller">WizadSettingsBundle:Settings:export</default>
+    </route>
 </routes>

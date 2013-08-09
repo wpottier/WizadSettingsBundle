@@ -2,6 +2,12 @@
 
 {% block wizad_setting_content %}
 
+<div class="pull-right">
+    <form action="{{ path('wizad_settings_export') }}" method="post">
+        <button type="submit">Export</button>
+    </form>
+</div>
+
 <form action="{{ form.vars.action }}" method="{{ form.vars.method }}" class="form-horizontal">
 
     {% include 'WizadSettingsBundle:Settings:_innerForm.html.twig' with {'form': form, 'settings': settings} only %}

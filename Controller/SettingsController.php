@@ -12,9 +12,13 @@
 namespace Wizad\SettingsBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Kernel;
+use Symfony\Component\Yaml\Yaml;
 use Wizad\SettingsBundle\DependencyInjection\ContainerInjectionManager;
+use Wizad\SettingsBundle\Form\ImportType;
 use Wizad\SettingsBundle\Form\SettingsType;
+use Wizad\SettingsBundle\Model\Import;
 use Wizad\SettingsBundle\Model\Settings;
 
 class SettingsController extends Controller
@@ -49,6 +53,33 @@ class SettingsController extends Controller
         return $this->render($template, array(
             'form' => $form->createView(),
             'settings' => $settings
+        ));
+    }
+
+    public function exportAction()
+    {
+        /** @var Settings $settings */
+        $settings = $this->get('wizad_settings.model.settings');
+
+        $filename = $this->getRequest()->attributes->get('filename', 'settings_');
+        $response = new Response(Yaml::dump($settings->getDataAsArray(), 2, 4, true), 200, array(
+            'Content-type' => 'text/yaml',
+            'Content-Disposition' => sprintf('attachment; filename="%s%s.yml"', $filename, date('YmdHis'))
+        ));
+        return $response;
+    }
+
+    public function importAction()
+    {
+        $import = new Import();
+        $form = $this->createForm(new ImportType(), $import, array(
+            'action' => $this->generateUrl('wizad_settings_import')
+        ));
+
+        $template = $this->getRequest()->attributes->get('template', 'WizadSettingsBundle:Settings:import.html.twig');
+        return $this->render($template, array(
+            'form' => $form->createView(),
+            'import' => $import
         ));
     }
 

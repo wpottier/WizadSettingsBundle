@@ -2,9 +2,7 @@
 
 namespace Wizad\SettingsBundle\Tests\DependencyInjection;
 
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Wizad\SettingsBundle\DependencyInjection\ContainerInjectionManager;
-use Wizad\SettingsBundle\Parser\XmlFileLoader;
 use Wizad\SettingsBundle\Tests\TestCase;
 
 class ContainerInjectionManagerTest extends TestCase

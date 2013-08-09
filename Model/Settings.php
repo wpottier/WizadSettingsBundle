@@ -43,6 +43,10 @@ class Settings implements \ArrayAccess
         }
     }
 
+    public function keyExistInSchema($key) {
+        return array_key_exists($key, $this->keyDict);
+    }
+
     /**
      * @return mixed
      */

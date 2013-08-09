@@ -76,6 +76,40 @@ class SettingsController extends Controller
             'action' => $this->generateUrl('wizad_settings_import')
         ));
 
+        $form->handleRequest($this->getRequest());
+
+        if($form->isValid()) {
+
+            $data = Yaml::parse($import->getFileContent());
+
+            if($data) {
+                /** @var Settings $settings */
+                $settings = $this->get('wizad_settings.model.settings');
+
+                foreach($data as $key => $value) {
+                    if($settings->keyExistInSchema($key)) {
+                        $settings->{'setting_'.$settings->formName($key)} = $value;
+                    }
+                }
+
+                $settings->save();
+
+                // Force container regeneration
+                /** @var Kernel $kernel */
+                $kernel = $this->get('kernel');
+                /** @var ContainerInjectionManager $injectionManager */
+                $injectionManager = $this->get('wizad_settings.dependency_injection.container_injection_manager');
+                $injectionManager->rebuild($kernel);
+
+                $this->get('session')->getFlashbag()->add('success', 'Settings was successfully loaded from file !');
+
+                return $this->redirect($this->generateUrl('wizad_settings_edit'));
+            }
+            else {
+                $this->get('session')->getFlashbag()->add('error', 'Unable to understand imported file');
+            }
+        }
+
         $template = $this->getRequest()->attributes->get('template', 'WizadSettingsBundle:Settings:import.html.twig');
         return $this->render($template, array(
             'form' => $form->createView(),

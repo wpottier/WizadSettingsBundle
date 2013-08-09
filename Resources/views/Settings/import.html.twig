@@ -1,0 +1,12 @@
+{% extends 'WizadSettingsBundle:Settings:layout.html.twig' %}
+
+{% block wizad_setting_content %}
+
+    <form action="{{ form.vars.action }}" method="{{ form.vars.method }}"{{ form_enctype(form) }}>
+        {{ form_widget(form) }}
+
+
+        <button type="submit">Importer</button>
+    </form>
+
+{% endblock %}

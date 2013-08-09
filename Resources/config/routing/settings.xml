@@ -11,4 +11,8 @@
     <route id="wizad_settings_export" pattern="/export" methods="POST">
         <default key="_controller">WizadSettingsBundle:Settings:export</default>
     </route>
+
+    <route id="wizad_settings_import" pattern="/import" methods="GET|POST">
+        <default key="_controller">WizadSettingsBundle:Settings:import</default>
+    </route>
 </routes>

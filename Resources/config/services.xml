@@ -23,7 +23,11 @@
 
         <service id="wizad_settings.model.settings" class="%wizad_settings.model.settings.class%">
             <argument type="service" id="wizad_settings.dal.parameters_storage" />
+            <argument type="service" id="wizad_settings.dependency_injection.container_injection_manager" />
             <argument>%wizad_settings.schema%</argument>
+            <call method="setContainer">
+                <argument type="service" id="service_container" />
+            </call>
         </service>
 
 

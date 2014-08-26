@@ -46,7 +46,7 @@ class ContainerInjectionManager
                 $value = $this->parametersStorage->get($parameter['key']);
             }
 
-            $container->setParameter($this->getParametersPrefix() . $parameter['key'], $this->protectParameterValue($value));
+            $container->setParameter($this->getParametersName($parameter['key']), $this->protectParameterValue($value));
         }
     }
 
@@ -81,8 +81,14 @@ class ContainerInjectionManager
         $dumpContainerReflectionMethod->invoke($kernel, $cache, $newContainer, $class, $getContainerBaseClassReflectionMethod->invoke($kernel));
     }
 
+    public function getParametersName($key)
+    {
+        return sprintf('%s%s', $this->getParametersPrefix(), $key);
+    }
+
     /**
-     * @return mixed
+     * Return parameters prefix
+     * @return string
      */
     public function getParametersPrefix()
     {

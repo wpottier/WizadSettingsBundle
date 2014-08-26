@@ -11,19 +11,32 @@
 
 namespace Wizad\SettingsBundle\Model;
 
+use Doctrine\Common\Proxy\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Application;
 use Symfony\Component\DependencyInjection\Container;
+use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Kernel;
 use Wizad\SettingsBundle\Dal\ParametersStorageInterface;
+use Wizad\SettingsBundle\DependencyInjection\ContainerInjectionManager;
 
-class Settings implements \ArrayAccess
+class Settings implements \ArrayAccess, ContainerAwareInterface
 {
     /**
      * @var ParametersStorageInterface
      */
     private $parametersStorage;
+
+    /**
+     * @var ContainerInjectionManager
+     */
+    private $containerInjectionManager;
+
+    /**
+     * @var ContainerInterface
+     */
+    private $container;
 
     private $schema;
 
@@ -31,17 +44,31 @@ class Settings implements \ArrayAccess
 
     private $data;
 
-    public function __construct(ParametersStorageInterface $parametersStorage, $schema)
+    public function __construct(ParametersStorageInterface $parametersStorage, ContainerInjectionManager $containerInjectionManager, $schema)
     {
-        $this->parametersStorage = $parametersStorage;
-        $this->schema            = $schema;
-        $this->data              = array();
-        $this->keyDict           = array();
+        $this->parametersStorage         = $parametersStorage;
+        $this->containerInjectionManager = $containerInjectionManager;
+        $this->schema                    = $schema;
+        $this->data                      = array();
+        $this->keyDict                   = array();
 
         foreach ($this->schema as $id => $setting) {
             $this->keyDict[$setting['key']] = $id;
         }
     }
+
+    /**
+     * Sets the Container.
+     *
+     * @param ContainerInterface|null $container A ContainerInterface instance or null
+     *
+     * @api
+     */
+    public function setContainer(ContainerInterface $container = null)
+    {
+        $this->container = $container;
+    }
+
 
     public function keyExistInSchema($key) {
         return array_key_exists($key, $this->keyDict);
@@ -92,12 +119,23 @@ class Settings implements \ArrayAccess
             $name = str_replace('form_', '', $name);
 
             return $this->formName($name);
-        }
-        elseif(array_key_exists($name, $this->keyDict)) {
+        } elseif (strpos($name, 'real_') === 0) {
             $value = $this->schema[$this->keyDict[$name]]['default'];
 
             if($this->parametersStorage->has($name))
                 $value = $this->parametersStorage->get($name);
+
+            return $value;
+        }
+        elseif(array_key_exists($name, $this->keyDict)) {
+
+            $parameterName = $this->containerInjectionManager->getParametersName($name);
+
+            if(!$this->container->hasParameter($parameterName)) {
+                throw new \InvalidArgumentException();
+            }
+
+            $value = $this->container->getParameter($parameterName);
 
             return $value;
         }

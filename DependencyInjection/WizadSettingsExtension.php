@@ -72,7 +72,7 @@ class WizadSettingsExtension extends Extension implements PrependExtensionInterf
      */
     protected function loadStorageEngine($config, ContainerBuilder $container)
     {
-        if(isset($config['redis'])) {
+        if (isset($config['redis'])) {
 
             $prefix  = isset($config['redis']['prefix']) && !empty($config['redis']['prefix']) ? $config['redis']['prefix'] . '.' : '';
             $container->setParameter('wizad_settings.config.storage', array(
@@ -83,6 +83,21 @@ class WizadSettingsExtension extends Extension implements PrependExtensionInterf
             $parametersStorageServiceDef = $container->getDefinition('wizad_settings.dal.parameters_storage');
             $parametersStorageServiceDef
                 ->setClass($container->getParameter('wizad_settings.dal.redis.class'))
+                ->addArgument($container->getParameter('wizad_settings.config.storage'))
+            ;
+
+            return $container->get('wizad_settings.dal.parameters_storage');
+        } elseif (isset($config['mysql'])) {
+            $container->setParameter('wizad_settings.config.storage', array(
+                'host'     => $config['mysql']['host'],
+                'user'     => $config['mysql']['user'],
+                'password' => $config['mysql']['password'],
+                'dbname'   => $config['mysql']['dbname'],
+            ));
+
+            $parametersStorageServiceDef = $container->getDefinition('wizad_settings.dal.parameters_storage');
+            $parametersStorageServiceDef
+                ->setClass($container->getParameter('wizad_settings.dal.mysql.class'))
                 ->addArgument($container->getParameter('wizad_settings.config.storage'))
             ;
 

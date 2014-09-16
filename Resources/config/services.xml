@@ -8,6 +8,7 @@
         <parameter key="wizad_settings.dependency_injection.container_injection_manager.class">Wizad\SettingsBundle\DependencyInjection\ContainerInjectionManager</parameter>
         <parameter key="wizad_settings.model.settings.class">Wizad\SettingsBundle\Model\Settings</parameter>
         <parameter key="wizad_settings.dal.redis.class">Wizad\SettingsBundle\Dal\RedisParametersStorage</parameter>
+        <parameter key="wizad_settings.dal.mysql.class">Wizad\SettingsBundle\Dal\MysqlParametersStorage</parameter>
 
         <parameter key="wizad_settings.parameters_prefix">wizad_settings.dynamic.</parameter>
     </parameters>

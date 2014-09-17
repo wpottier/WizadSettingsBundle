@@ -7,7 +7,7 @@ Settings system for Symfony2 applications, editable via web user interface, inje
 
 This version of the bundle requires Symfony 2.3+.
 
-The Redis database server is required to store all the parameters.
+A Mysql database or a Redis database server is required to store all the parameters.
 
 ## Installation
 
@@ -50,8 +50,9 @@ public function registerBundles()
 
 ### Step 3: Configuration
 
-Edit your application config file to provide connections informations to redis and to list the bundle wich contains configurable parameters.
+Edit your application config file to provide connections informations to your storage (redis or mysql) and to list the bundle wich contains configurable parameters.
 
+Redis example :
 ```yaml
 # app/config/config.yml
 wizad_settings:
@@ -64,6 +65,29 @@ wizad_settings:
  * dns : the connection string to redis server
  * prefix : key prefix to isolate your data in the redis server
  * bundles : list of bundles that will contains configurable settings
+
+Mysql example :
+```yaml
+# app/config/config.yml
+wizad_settings:
+    mysql:
+        host: 127.0.0.1
+        user: root
+        password: root
+        dbname: mysettings
+    bundles: [ ... ]
+```
+ * bundles : list of bundles that will contains configurable settings
+
+ For Mysql Storage you need to initialize the setting table with the following query :
+
+ CREATE TABLE IF NOT EXISTS `wizad_settings` (
+   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+   `identifier` varchar(255) NOT NULL DEFAULT '',
+   `value` varchar(255) NOT NULL DEFAULT '',
+   PRIMARY KEY (`id`),
+   UNIQUE KEY `identifier` (`identifier`)
+ ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ### Step 4: Declaring configurable settings
 
@@ -91,7 +115,7 @@ In your bundle, create a file name settings.xml in the folder <bundle_dir>/Resou
 
 ### Step 5: Use the parameters
 
-You can now use the parameters in you service container. For exemple the settings.xml file above will register the parameters:
+You can now use the parameters in you service container. For example the settings.xml file above will register the parameters:
 
 ```
 %wizad_settings.dynamic.my_site.email.sender_name%

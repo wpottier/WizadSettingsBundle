@@ -3,7 +3,7 @@
 /*
  * This file is part of the WizadSettingBundle package.
  *
- * (c) William Pottier <wpottier@allprogrammic.com>
+ * (c) Matthieu Sévère <matthieu.severe@gmail.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -18,15 +18,6 @@ class MysqlParametersStorage implements ParametersStorageInterface
     public function __construct($config)
     {
         $this->db = new \PDO("mysql:host=".$config['host'].";dbname=".$config['dbname'].";charset=utf8", $config['user'], $config['password']);
-
-        $statement = $this->db->prepare("CREATE TABLE IF NOT EXISTS `wizad_settings` (
-                      `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-                      `identifier` varchar(255) NOT NULL DEFAULT '',
-                      `value` varchar(255) NOT NULL DEFAULT '',
-                      PRIMARY KEY (`id`),
-                      UNIQUE KEY `identifier` (`identifier`)
-                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
-        $statement->execute();
     }
 
     public function has($key)

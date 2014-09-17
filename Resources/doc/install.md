@@ -77,10 +77,17 @@ wizad_settings:
         dbname: mysettings
     bundles: [ ... ]
 ```
-
- * dns : the connection string to redis server
- * prefix : key prefix to isolate your data in the redis server
  * bundles : list of bundles that will contains configurable settings
+
+ For Mysql Storage you need to initialize the setting table with the following query :
+
+ CREATE TABLE IF NOT EXISTS `wizad_settings` (
+   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+   `identifier` varchar(255) NOT NULL DEFAULT '',
+   `value` varchar(255) NOT NULL DEFAULT '',
+   PRIMARY KEY (`id`),
+   UNIQUE KEY `identifier` (`identifier`)
+ ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ### Step 4: Declaring configurable settings
 

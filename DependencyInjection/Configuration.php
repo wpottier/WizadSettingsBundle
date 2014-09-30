@@ -44,6 +44,7 @@ class Configuration implements ConfigurationInterface
         $rootNode
             ->addDefaultsIfNotSet()
             ->children()
+                ->scalarNode('config_file_parser')->defaultValue('\Wizad\SettingsBundle\Parser\XmlFileLoader')->end()
                 ->arrayNode('redis')
                 ->info('redis access')
                     ->children()
@@ -52,8 +53,8 @@ class Configuration implements ConfigurationInterface
                     ->end()
                 ->end()
                 ->arrayNode('mysql')
-                    ->info('mysql access')
-                        ->children()
+                ->info('mysql access')
+                    ->children()
                         ->scalarNode('host')->defaultValue('localhost')->isRequired()->end()
                         ->scalarNode('user')->defaultValue("")->isRequired()->end()
                         ->scalarNode('password')->defaultValue("")->isRequired()->end()

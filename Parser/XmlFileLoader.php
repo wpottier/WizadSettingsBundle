@@ -15,7 +15,7 @@ use Symfony\Component\Config\FileLocatorInterface;
 use Symfony\Component\Config\Util\XmlUtils;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
-class XmlFileLoader
+class XmlFileLoader implements ParserInterface
 {
     const NAMESPACE_URI = 'http://william-pottier.fr/schema/settings';
     const SCHEME_PATH   = '/../Resources/schema/settings-1.0.xsd';
@@ -39,11 +39,10 @@ class XmlFileLoader
      * Returns true if this class supports the given resource.
      *
      * @param mixed  $resource A resource
-     * @param string $type     The resource type
      *
      * @return Boolean true if this class supports the given resource, false otherwise
      */
-    public function supports($resource, $type = null)
+    public function supports($resource)
     {
         return is_string($resource) && 'xml' === pathinfo($resource, PATHINFO_EXTENSION);
     }
@@ -52,10 +51,10 @@ class XmlFileLoader
     /**
      * Loads an XML file.
      *
-     * @param mixed  $file The resource
-     * @param string $type The resource type
+     * @param mixed $file The resource
+     * @return array
      */
-    public function load($file, $type = null)
+    public function load($file)
     {
         $schema = array();
 

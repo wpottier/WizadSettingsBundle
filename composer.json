@@ -15,6 +15,7 @@
         "symfony/twig-bundle":      "~2.1",
         "symfony/form":             "~2.3",
         "symfony/validator":        "~2.3",
+        "symfony/config":        "~2.3",
         "predis/predis":            "v0.8.3"
     },
     "require-dev": {

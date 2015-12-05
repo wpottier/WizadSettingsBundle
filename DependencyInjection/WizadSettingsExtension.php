@@ -18,7 +18,6 @@ use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 use Symfony\Component\DependencyInjection\Loader;
-use Symfony\Component\HttpKernel\Kernel;
 use Wizad\SettingsBundle\Dal\ParametersStorageInterface;
 use Wizad\SettingsBundle\Parser;
 
@@ -79,7 +78,7 @@ class WizadSettingsExtension extends Extension implements PrependExtensionInterf
         } elseif (isset($config['mysql'])) {
             $this->prepareMysqlStorageEngine($config['mysql'], $container, $parametersStorageServiceDef);
         } else {
-            throw new \Exception('Unsupported storage');
+            throw new \Exception('There\'s no valid storage configured for the WizadSettingBundle. Please configure redis or mysql storage.');
         }
 
         $parametersStorageServiceDef->addArgument($container->getParameter('wizad_settings.config.storage'));
@@ -126,23 +125,35 @@ class WizadSettingsExtension extends Extension implements PrependExtensionInterf
     protected function loadDynamicParametersSchema($config, ContainerBuilder $container)
     {
         $bundles = $container->getParameter('kernel.bundles');
+        $kernelRootDir = $container->getParameter('kernel.root_dir');
 
         $schema = array();
         foreach ($config['bundles'] as $bundle) {
             $reflector = new \ReflectionClass($bundles[$bundle]);
 
-            $loader = new $config['config_file_parser'](new FileLocator(dirname($reflector->getFileName()) . '/Resources/config'));
-            $schema = array_merge($loader->load('settings.xml'), $schema);
+            $loader = new $config['config_file_parser'](new FileLocator([
+                dirname($reflector->getFileName()) . '/Resources/config',
+                $kernelRootDir . '/Resources/' . $bundle . '/config',
+            ]));
+            $schema = array_merge($loader->load('wizad_settings.xml'), $schema);
         }
 
+        // Search if file exist in main
+        if (file_exists($kernelRootDir . '/config/wizad_settings.xml')) {
+            $loader = new $config['config_file_parser'](new FileLocator([
+                $kernelRootDir . '/config',
+            ]));
+            $schema = array_merge($loader->load('wizad_settings.xml'), $schema);
+        }
+
+        // Store schema
         $container->setParameter('wizad_settings.schema', $schema);
+
         return $schema;
     }
 
     public function getConfiguration(array $config, ContainerBuilder $container)
     {
-        $bundles = $container->getParameter('kernel.bundles');
-
-        return new Configuration(array_keys($bundles));
+        return new Configuration(array_keys($container->getParameter('kernel.bundles')));
     }
 }

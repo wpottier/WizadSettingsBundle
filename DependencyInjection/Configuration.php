@@ -21,6 +21,7 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
  */
 class Configuration implements ConfigurationInterface
 {
+    /** @var array */
     private $bundles;
 
     /**
@@ -48,7 +49,7 @@ class Configuration implements ConfigurationInterface
                 ->arrayNode('redis')
                 ->info('redis access')
                     ->children()
-                        ->scalarNode('dsn')->defaultValue('tcp://127.0.0.1:6379')->isRequired()->end()
+                        ->scalarNode('dsn')->defaultValue('tcp://127.0.0.1:6379')->end()
                         ->scalarNode('prefix')->defaultValue("symfony.parameters.dynamic")->end()
                     ->end()
                 ->end()
@@ -62,7 +63,7 @@ class Configuration implements ConfigurationInterface
                     ->end()
                 ->end()
                 ->arrayNode('bundles')
-                    ->defaultValue($this->bundles)
+                    ->defaultValue([])
                     ->prototype('scalar')
                     ->validate()
                         ->ifNotInArray($this->bundles)

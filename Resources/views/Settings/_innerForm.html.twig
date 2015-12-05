@@ -1,17 +1,12 @@
 {{ form_errors(form) }}
 
 {% for row in form %}
-        {% set placeholder = '' %}
-        {% if settings["default_" ~ row.vars.name] is defined %}
-            {% set placeholder = settings["default_" ~ row.vars.name] %}
-        {% endif %}
-
         <div class="controls">
             {{ form_errors(row) }}
             {{ form_label(row, null, {'label_attr': {'class': 'control-label'} }) }}
             <div class="control-group">
 
-                {{ form_widget(row, {'attr': {'placeholder': placeholder} } ) }}
+                {{ form_widget(row) }}
             </div>
         </div>
 

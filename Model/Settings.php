@@ -11,263 +11,308 @@
 
 namespace Wizad\SettingsBundle\Model;
 
-use Doctrine\Common\Proxy\Exception\InvalidArgumentException;
-use Symfony\Component\Console\Application;
-use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpKernel\Kernel;
+use Traversable;
 use Wizad\SettingsBundle\Dal\ParametersStorageInterface;
 use Wizad\SettingsBundle\DependencyInjection\ContainerInjectionManager;
 
-class Settings implements \ArrayAccess, ContainerAwareInterface
+class Settings implements ContainerAwareInterface, SettingsInterface
 {
-    /**
-     * @var ParametersStorageInterface
-     */
+    /** @var ParametersStorageInterface */
     private $parametersStorage;
 
-    /**
-     * @var ContainerInjectionManager
-     */
+    /** @var ContainerInjectionManager */
     private $containerInjectionManager;
 
-    /**
-     * @var ContainerInterface
-     */
+    /** @var ContainerInterface */
     private $container;
 
+    /** @var SettingElement[] */
+    private $elements;
+
+    /** @var SettingElement[] */
+    private $formSchema;
+
+    /** @var array */
     private $schema;
-
-    private $keyDict;
-
-    private $data;
 
     public function __construct(ParametersStorageInterface $parametersStorage, ContainerInjectionManager $containerInjectionManager, $schema)
     {
         $this->parametersStorage         = $parametersStorage;
         $this->containerInjectionManager = $containerInjectionManager;
         $this->schema                    = $schema;
-        $this->data                      = array();
-        $this->keyDict                   = array();
+
+        $this->buildFromSchema();
+    }
+
+    /**
+     * Initialize internal storage
+     */
+    protected function buildFromSchema()
+    {
+        $this->elements = [];
+        $this->formSchema = [];
 
         foreach ($this->schema as $id => $setting) {
-            $this->keyDict[$setting['key']] = $id;
+            $element = new SettingElement(
+                $this,
+                $id,
+                isset($setting['default']) ? $setting['default'] : null
+            );
+
+            if (isset($setting['form'])) {
+                if (isset($setting['form']['type'])) {
+                    $element->setFormType($setting['form']['type']);
+                }
+
+                if (isset($setting['form']['options'])) {
+                    $element->setFormOptions($setting['form']['options']);
+                }
+            }
+
+            $this->elements[$element->getId()] = $element;
+            $this->formSchema[$element->getFormName()] = $element;
         }
     }
 
     /**
-     * Sets the Container.
-     *
-     * @param ContainerInterface|null $container A ContainerInterface instance or null
-     *
-     * @api
+     * @inheritdoc
+     */
+    public function __get($key)
+    {
+        if ($this->isValidKey($key)) {
+            return $this->getValue($key);
+        }
+
+        if ($this->isValidFormName($key)) {
+            return $this->getValue($this->formSchema[$key]->getId());
+        }
+
+        throw new \InvalidArgumentException();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function __set($key, $value)
+    {
+        if ($this->isValidKey($key)) {
+            return $this->setValue($key, $value);
+        }
+
+        if ($this->isValidFormName($key)) {
+            return $this->setValue($this->formSchema[$key]->getId(), $value);
+        }
+
+        throw new \InvalidArgumentException();
+    }
+
+    /**
+     * @return \ArrayIterator|SettingElementInterface[]
+     */
+    public function getIterator()
+    {
+        return new \ArrayIterator($this->elements);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function offsetExists($offset)
+    {
+        return $this->isValidKey($offset);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function offsetGet($offset)
+    {
+        return $this->getValue($offset);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function offsetSet($offset, $value)
+    {
+        // TODO: Implement offsetSet() method.
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function offsetUnset($offset)
+    {
+        // TODO: Implement offsetUnset() method.
+    }
+
+    /**
+     * @inheritdoc
      */
     public function setContainer(ContainerInterface $container = null)
     {
         $this->container = $container;
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function updateFromArray(array $data)
+    {
+        foreach ($data as $key => $value) {
+            if ($this->isValidKey($key)) {
+                $this->setValue($key, $value);
+            }
+        }
 
-    public function keyExistInSchema($key) {
-        return array_key_exists($key, $this->keyDict);
+        return $this;
     }
 
     /**
-     * @return mixed
+     * @inheritdoc
      */
-    public function getSchema()
-    {
-        return $this->schema;
-    }
-
-    public function findId($key)
-    {
-        if (!isset($this->keyDict[$key]))
-            return null;
-
-        return $this->keyDict[$key];
-    }
-
-    public function formName($key)
-    {
-        $id = $this->findId($key);
-
-        return sprintf('setting_%s', $id);
-    }
-
-    public function __get($name)
-    {
-        if (strpos($name, 'setting_') === 0) {
-            $name = str_replace('setting_', '', $name);
-
-            if (!array_key_exists($name, $this->schema)) {
-                trigger_error(sprintf('Property %s does not exist in dynamic settings.', $name));
-            }
-
-            return $this->parametersStorage->get($this->schema[$name]['key']);
-        } elseif (strpos($name, 'default_setting_') === 0) {
-            $name = str_replace('default_setting_', '', $name);
-
-            if (!array_key_exists($name, $this->schema)) {
-                trigger_error(sprintf('Property %s does not exist in dynamic settings.', $name));
-            }
-
-            return $this->schema[$name]['default'];
-        } elseif (strpos($name, 'form_') === 0) {
-            $name = str_replace('form_', '', $name);
-
-            return $this->formName($name);
-        } elseif (strpos($name, 'real_') === 0) {
-            $value = $this->schema[$this->keyDict[$name]]['default'];
-
-            if($this->parametersStorage->has($name))
-                $value = $this->parametersStorage->get($name);
-
-            return $value;
-        }
-        elseif(array_key_exists($name, $this->keyDict)) {
-
-            $parameterName = $this->containerInjectionManager->getParametersName($name);
-
-            if(!$this->container->hasParameter($parameterName)) {
-                throw new \InvalidArgumentException();
-            }
-
-            $value = $this->container->getParameter($parameterName);
-
-            return $value;
-        }
-
-        trigger_error(sprintf('Property %s does not exist in dynamic settings.', $name));
-    }
-
-    public function __set($name, $value)
-    {
-        $name = str_replace('setting_', '', $name);
-
-        if (!array_key_exists($name, $this->schema)) {
-            trigger_error(sprintf('Property %s does not exist in dynamic settings.', $name));
-        }
-
-        return $this->data[$this->schema[$name]['key']] = $value;
-    }
-
-    /**
-     * Save current model in the storage
-     */
-    public function save()
-    {
-        foreach ($this->data as $key => $value) {
-            if (!empty($value)) {
-                $this->parametersStorage->set($key, $value);
-            } else {
-                // Remove value to use default
-                $this->parametersStorage->remove($key);
-            }
-        }
-    }
-
-    /**
-     * @return array
-     */
-    public function getDataAsArray()
+    public function toArray()
     {
         $data = array();
 
-        foreach($this->schema as $param) {
-            if(!$this->parametersStorage->has($param['key'])) {
+        foreach($this->elements as $element) {
+            if (empty($value) || $element->getValue() == $element->getDefaultValue()) {
                 continue;
             }
 
-            $data[$param['key']] = $this->parametersStorage->get($param['key']);
+            $data[$element->getId()] = $element->getValue();
         }
 
         return $data;
     }
 
     /**
-     * (PHP 5 &gt;= 5.0.0)<br/>
-     * Whether a offset exists
-     *
-     * @link http://php.net/manual/en/arrayaccess.offsetexists.php
-     *
-     * @param mixed $offset <p>
-     *                      An offset to check for.
-     * </p>
-     *
-     * @return boolean true on success or false on failure.
-     * </p>
-     * <p>
-     *       The return value will be casted to boolean if non-boolean was returned.
+     * @inheritdoc
      */
-    public function offsetExists($offset)
+    public function isValidKey($key)
     {
-        if (strpos($offset, 'form_') === 0) {
-            $offset = str_replace('form_', '', $offset);
+        return array_key_exists($key, $this->elements);
+    }
 
-            return array_key_exists($offset, $this->keyDict);
-        } elseif (strpos($offset, 'setting_') === 0 || strpos($offset, 'default_setting_') === 0) {
-            $offset = str_replace(array('setting_ ', 'default_setting_'), '', $offset);
+    /**
+     * @inheritdoc
+     */
+    public function isValidFormName($shaId)
+    {
+        return array_key_exists($shaId, $this->formSchema);
+    }
 
-            return array_key_exists($offset, $this->schema);
+    /**
+     * @inheritdoc
+     */
+    public function getKeyFromFormName($shaId)
+    {
+        if (!$this->isValidFormName($shaId)) {
+            throw new \InvalidArgumentException();
         }
 
-        return array_key_exists($offset, $this->keyDict);
+        return $this->formSchema[$shaId]->getId();
     }
 
     /**
-     * (PHP 5 &gt;= 5.0.0)<br/>
-     * Offset to retrieve
-     *
-     * @link http://php.net/manual/en/arrayaccess.offsetget.php
-     *
-     * @param mixed $offset <p>
-     *                      The offset to retrieve.
-     * </p>
-     *
-     * @return mixed Can return all value types.
+     * @inheritdoc
      */
-    public function offsetGet($offset)
+    public function save()
     {
-        return $this->$offset;
+        foreach ($this->elements as $element) {
+            if (!empty($value) && $element->getValue() != $element->getDefaultValue()) {
+                $this->parametersStorage->set($element->getId(), $element->getValue());
+            } else {
+                // Remove value to use default
+                $this->parametersStorage->remove($element->getId());
+            }
+        }
+
+        $this->containerInjectionManager->rebuild($this->container->get('kernel'));
+
+        return $this;
     }
 
     /**
-     * (PHP 5 &gt;= 5.0.0)<br/>
-     * Offset to set
-     *
-     * @link http://php.net/manual/en/arrayaccess.offsetset.php
-     *
-     * @param mixed $offset <p>
-     *                      The offset to assign the value to.
-     * </p>
-     * @param mixed $value  <p>
-     *                      The value to set.
-     * </p>
-     *
-     * @return void
+     * @inheritdoc
      */
-    public function offsetSet($offset, $value)
+    public function setValue($key, $value)
     {
-        $this->$offset = $value;
+        if (!$this->isValidKey($key)) {
+            throw new \InvalidArgumentException(sprintf('%s is not an existing wizad_settings name', $key));
+        }
+
+        return $this->elements[$key]->setValue($value);
     }
 
     /**
-     * (PHP 5 &gt;= 5.0.0)<br/>
-     * Offset to unset
-     *
-     * @link http://php.net/manual/en/arrayaccess.offsetunset.php
-     *
-     * @param mixed $offset <p>
-     *                      The offset to unset.
-     * </p>
-     *
-     * @return void
+     * @inheritdoc
      */
-    public function offsetUnset($offset)
+    public function getValue($key)
     {
-        // TODO: Implement offsetUnset() method.
+        if (!$this->isValidKey($key)) {
+            throw new \InvalidArgumentException(sprintf('%s is not an existing wizad_settings name', $key));
+        }
+
+        return $this->elements[$key]->getValue();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDefaultValue($key)
+    {
+        if ($this->isValidKey($key)) {
+            return $this->elements[$key]->getDefaultValue();
+
+        }
+
+        if ($this->isValidFormName($key)) {
+            return $this->formSchema[$key]->getDefaultValue();
+        }
+
+        throw new \InvalidArgumentException(sprintf('%s is not an existing wizad_settings name', $key));
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getFormName($key)
+    {
+        if (!$this->isValidKey($key)) {
+            throw new \InvalidArgumentException(sprintf('%s is not an existing wizad_settings name', $key));
+        }
+
+        return $this->elements[$key]->getFormName();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function loadValue($key, $forceRefresh = false)
+    {
+        if (!$this->isValidKey($key)) {
+            throw new \InvalidArgumentException(sprintf('%s is not an existing wizad_settings name', $key));
+        }
+
+        $parameterName = $this->container->get('wizad_settings.dependency_injection.container_injection_manager')->getParametersName($key);
+
+        if (!$forceRefresh && $this->container->hasParameter($parameterName)) {
+            $this->elements[$key]->setValue($this->container->getParameter($parameterName));
+
+            return $this->elements[$key]->getValue();
+        }
+
+        if ($this->parametersStorage->has($key)) {
+            $this->elements[$key]->setValue($this->parametersStorage->get($key));
+
+            return $this->elements[$key]->getValue();
+        }
+
+        $this->elements[$key]->setUseDefaultValue();
+
+        return $this->elements[$key]->getValue();
     }
 }

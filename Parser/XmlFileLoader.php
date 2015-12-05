@@ -14,6 +14,7 @@ namespace Wizad\SettingsBundle\Parser;
 use Symfony\Component\Config\FileLocatorInterface;
 use Symfony\Component\Config\Util\XmlUtils;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 
 class XmlFileLoader implements ParserInterface
 {
@@ -101,10 +102,10 @@ class XmlFileLoader implements ParserInterface
         }
 
         if (!isset($parameter['form']['type'])) {
-            $parameter['form']['type'] = 'text';
+            $parameter['form']['type'] = 'Symfony\Component\Form\Extension\Core\Type\TextType';
         }
 
-        $schema[sha1($parameter['key'])] = $parameter;
+        $schema[$parameter['key']] = $parameter;
     }
 
 

@@ -24,10 +24,8 @@ class ContainerInjectionManager
 
     private $schema;
 
-    public function __construct(ParametersStorageInterface $parametersStorage, $schema, $parametersPrefix)
+    public function __construct($parametersPrefix)
     {
-        $this->parametersStorage = $parametersStorage;
-        $this->schema            = $schema;
         $this->parametersPrefix  = $parametersPrefix;
     }
 
@@ -38,20 +36,16 @@ class ContainerInjectionManager
      */
     public function inject(ContainerBuilder $container)
     {
-        foreach ($this->schema as $parameter) {
+        $settings = $container->get('wizad_settings.model.settings');
 
-            $value = $parameter['default'];
-
-            if ($this->parametersStorage->has($parameter['key'])) {
-                $value = $this->parametersStorage->get($parameter['key']);
-            }
-
-            $container->setParameter($this->getParametersName($parameter['key']), $this->protectParameterValue($value));
+        foreach($settings as $element) {
+            $container->setParameter($this->getParametersName($element->getId()), $settings->loadValue($element->getId()));
         }
     }
 
     /**
      * Rebuild the container and dump it to the cache to apply change on redis stored parameters
+     * @param Kernel $kernel
      */
     public function rebuild(Kernel $kernel)
     {

@@ -15,8 +15,6 @@
 
     <services>
         <service id="wizad_settings.dependency_injection.container_injection_manager" class="%wizad_settings.dependency_injection.container_injection_manager.class%">
-            <argument type="service" id="wizad_settings.dal.parameters_storage" />
-            <argument>%wizad_settings.schema%</argument>
             <argument>%wizad_settings.parameters_prefix%</argument>
         </service>
 

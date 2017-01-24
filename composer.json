@@ -10,29 +10,23 @@
         }
     ],
     "require": {
-        "php":                          ">=5.3.3",
-        "symfony/framework-bundle":     "~2.3",
-        "symfony/twig-bundle":          "~2.1",
-        "symfony/form":                 "~2.3",
-        "symfony/validator":            "~2.3",
-        "symfony/config":               "~2.3",
+        "php":                          ">=5.5.9",
+        "symfony/framework-bundle":     "^2.7|^3.0",
+        "symfony/twig-bundle":          "^2.7|^3.0",
+        "symfony/form":                 "^2.7|^3.0",
+        "symfony/validator":            "^2.7|^3.0",
+        "symfony/config":               "^2.7|^3.0",
+        "symfony/yaml":                 "^2.7|^3.0",
         "predis/predis":                "v0.8.3"
     },
     "require-dev": {
-        "phpunit/phpunit": "3.7.*",
-        "symfony/css-selector": "~2.1",
-        "symfony/browser-kit": "~2.1",
-        "symfony/validator": "~2.1",
-        "symfony/yaml": "~2.1",
-        "friendsofsymfony/rest-bundle": "0.12.*@dev",
-        "sensio/framework-extra-bundle": "~2.1",
-        "symfony/expression-language":  "~2.3"
+        "phpspec/phpspec": "~2.1"
     },
     "config": {
         "bin-dir": "bin"
     },
     "autoload": {
-        "psr-0": { "Wizad\\SettingsBundle": "" }
-    },
-    "target-dir": "Wizad//SettingsBundle"
+        "psr-4": {"Wizad\\SettingsBundle\\": "/src/"},
+        "exclude-from-classmap": ["/spec/"]
+    }
 }

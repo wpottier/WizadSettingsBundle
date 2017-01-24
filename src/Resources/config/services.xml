@@ -1,0 +1,35 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <parameters>
+        <parameter key="wizad_settings.dependency_injection.container_injection_manager.class">Wizad\SettingsBundle\DependencyInjection\ContainerInjectionManager</parameter>
+        <parameter key="wizad_settings.model.settings.class">Wizad\SettingsBundle\Model\Settings</parameter>
+        <parameter key="wizad_settings.dal.redis.class">Wizad\SettingsBundle\Dal\RedisParametersStorage</parameter>
+        <parameter key="wizad_settings.dal.mysql.class">Wizad\SettingsBundle\Dal\MysqlParametersStorage</parameter>
+
+        <parameter key="wizad_settings.parameters_prefix">wizad_settings.dynamic.</parameter>
+    </parameters>
+
+    <services>
+        <service id="wizad_settings.dependency_injection.container_injection_manager" class="%wizad_settings.dependency_injection.container_injection_manager.class%">
+            <argument>%wizad_settings.parameters_prefix%</argument>
+        </service>
+
+        <service id="wizad_settings.dal.parameters_storage" />
+
+        <service id="wizad_settings.model.settings" class="%wizad_settings.model.settings.class%">
+            <argument type="service" id="wizad_settings.dal.parameters_storage" />
+            <argument type="service" id="wizad_settings.dependency_injection.container_injection_manager" />
+            <argument>%wizad_settings.schema%</argument>
+            <call method="setContainer">
+                <argument type="service" id="service_container" />
+            </call>
+        </service>
+
+
+    </services>
+
+</container>

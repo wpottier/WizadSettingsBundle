@@ -28,6 +28,5 @@
     "autoload": {
         "psr-4": {"Wizad\\SettingsBundle\\": ""},
         "exclude-from-classmap": ["/spec/"]
-    },
-    "target-dir": "Wizad//SettingsBundle"
+    }
 }
